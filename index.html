@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Audio Recording and Looping Tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--primary:#667eea;--primary-2:#764ba2;--accent:#4c51bf;--danger:#ff4d6d;--muted:#b9c1ff;--text:#eaf0ff;--radius-xl:24px;--radius:14px;--shadow-lg:0 18px 50px rgba(0,0,0,.45);--shadow-sm:0 6px 18px rgba(0,0,0,.25);--panel:rgba(255,255,255,0.08);--panel-border:rgba(255,255,255,0.14)}
+    *{box-sizing:border-box}html,body{height:100%}
+
+body{
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+  color:var(--text);
+  background: transparent !important;   /* no page bg */
+}
+
+
+.wrapper{display:grid;place-items:center;padding:28px}
+
+    .card{width:min(960px,100%);background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.06));backdrop-filter:blur(10px) saturate(120%);border:1px solid rgba(255,255,255,.15);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);overflow:hidden}
+    .card__header{padding:20px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:linear-gradient(135deg, rgba(102,126,234,.20), rgba(118,75,162,.20));border-bottom:1px solid rgba(255,255,255,.12)}
+    h1{font-size:clamp(20px,2.2vw,26px);margin:0;letter-spacing:.2px}
+    .pill{font-size:12px;letter-spacing:.5px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:var(--muted)}
+    .card__body{padding:20px}
+    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:20px}@media (max-width:900px){.grid{grid-template-columns:1fr}}
+    .panel{background:var(--panel);border:1px solid var(--panel-border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm)}
+    .section-title{font-size:14px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+    .controls{display:grid;gap:12px}
+    .btn-row{display:flex;flex-wrap:wrap;gap:10px}
+    .btn{appearance:none;border:1px solid rgba(255,255,255,.18);background:linear-gradient(180deg, rgba(76,81,191,.95), rgba(76,81,191,.75));color:white;padding:12px 14px;border-radius:12px;font-weight:600;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease, background .2s ease;box-shadow:0 8px 22px rgba(76,81,191,.35)}
+    .btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(76,81,191,.45)}.btn:active{transform:translateY(0)}
+    .btn[disabled]{opacity:.55;cursor:not-allowed;box-shadow:none}
+    .btn.secondary{background:linear-gradient(180deg, rgba(185,193,255,.18), rgba(185,193,255,.12));color:var(--text)}
+    .btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,.28);color:var(--text)}
+    .upload{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14px;padding:10px 12px;background:rgba(255,255,255,.12);border:1px dashed rgba(255,255,255,.22);border-radius:12px;cursor:pointer}
+    input[type="file"]{display:none}
+    .audio{width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.2);height:40px;color-scheme:dark}
+    audio::-webkit-media-controls-enclosure{border-radius:12px!important;box-shadow:none;background-color:rgba(0,0,0,0.35)}
+    .row{display:grid;grid-template-columns:1fr 160px;align-items:center;gap:10px}
+    .select,.input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:10px 12px;color:var(--text)}
+    select.select{appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>');background-repeat:no-repeat;background-position:right 10px center;background-size:16px}
+    .range{-webkit-appearance:none;height:8px;border-radius:999px;padding:0;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18)}
+    .range::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:white;border:2px solid var(--accent);box-shadow:0 2px 6px rgba(0,0,0,.35);cursor:pointer}
+    .value{font-size:12px;color:var(--muted);text-align:right}
+    .volume-row{display:grid;grid-template-columns:65px 1fr auto;align-items:center;gap:10px}
+    .fade-row{display:grid;grid-template-columns:65px 1fr auto auto;align-items:center;gap:10px}
+    .switch{display:inline-grid;grid-template-columns:44px}.switch input{position:absolute;opacity:0}
+    .switch .track{width:44px;height:26px;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:999px;position:relative}
+    .switch .thumb{position:absolute;top:50%;left:4px;width:18px;height:18px;background:white;border-radius:50%;transform:translateY(-50%);transition:left .2s ease}
+    .switch input:checked + .track{background:linear-gradient(180deg, rgba(102,126,234,.8), rgba(118,75,162,.8))}
+    .switch input:checked + .track .thumb{left:22px}
+    .download{display:grid;gap:12px;grid-template-columns:1fr auto;align-items:center}
+    .muted{color:var(--muted);font-size:12px;letter-spacing:.3px}
+    .progress-container{height:6px;background:rgba(0,0,0,.3);border-radius:999px;overflow:hidden;margin-top:4px;display:none;position:relative}
+    .progress-bar{width:0%;height:100%;background:var(--primary);transition:width .12s linear;border-radius:999px}
+    .indeterminate .progress-bar{position:absolute;width:40%;left:-40%;animation:barber 1.2s linear infinite}
+    @keyframes barber{0%{left:-40%}50%{left:60%}100%{left:100%}}
+    .rec{display:inline-flex;align-items:center;gap:8px;font-weight:700;letter-spacing:.4px;color:var(--danger)}
+    .dot{width:8px;height:8px;background:var(--danger);border-radius:50%;box-shadow:0 0 0 0 rgba(255,77,109,.7);animation:pulse 1.6s infinite}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,77,109,.7)}70%{box-shadow:0 0 0 8px rgba(255,77,109,0)}100%{box-shadow:0 0 0 0 rgba(255,77,109,0)}}
+    :focus,:focus-visible{outline:none!important;box-shadow:none!important}
+  </style>
+</head>
+<body>
+  <main class="wrapper">
+    <section class="card" aria-labelledby="title">
+      <header class="card__header">
+        <h1 id="title">Audio Recording and Looping Tool</h1>
+        <span class="pill" id="rec-pill" aria-live="polite">Ready</span>
+      </header>
+      <div class="card__body">
+        <div class="grid">
+          <div class="panel">
+            <div class="btn-row" role="group" aria-label="Recording controls">
+              <button id="start-record-btn" class="btn" type="button">Start recording</button>
+              <button id="stop-record-btn" class="btn secondary" type="button" disabled>Stop</button>
+              <label class="upload" for="upload-audio">Upload audio<input id="upload-audio" type="file" accept="audio/*" /></label>
+              <button id="reset-btn" class="btn ghost" type="button" title="Reset settings">Reset</button>
+            </div>
+            <div style="height:12px"></div>
+            <audio id="audio-preview" class="audio" controls preload="metadata"></audio>
+            <div style="height:8px"></div>
+            <div class="muted" id="rec-indicator" aria-live="polite"></div>
+          </div>
+
+          <div class="panel">
+            <p class="section-title">Loop Settings</p>
+            <div class="controls">
+              <div class="row">
+                <label for="loop-duration">Loop duration</label>
+                <select id="loop-duration" class="select">
+                  <option value="60">1 minute</option>
+                  <option value="300">5 minutes</option>
+                  <option value="3600">1 hour</option>
+                </select>
+              </div>
+
+              <div class="volume-row">
+                <span class="label">Volume</span>
+                <input id="volume-control" class="range" type="range" min="0" max="1" step="0.01" value="1" />
+                <div class="value" id="volume-value">100%</div>
+              </div>
+
+              <div class="fade-row">
+                <span class="label">Fade in</span>
+                <input id="fade-in" class="range" type="range" min="0" max="10" step="1" value="0" disabled />
+                <div class="value" id="fade-in-value">0s</div>
+                <label class="switch">
+                  <input type="checkbox" id="fade-in-checkbox" />
+                  <span class="track"><span class="thumb"></span></span>
+                </label>
+              </div>
+
+              <div class="fade-row">
+                <span class="label">Fade out</span>
+                <input id="fade-out" class="range" type="range" min="0" max="10" step="1" value="0" disabled />
+                <div class="value" id="fade-out-value">0s</div>
+                <label class="switch">
+                  <input type="checkbox" id="fade-out-checkbox" />
+                  <span class="track"><span class="thumb"></span></span>
+                </label>
+              </div>
+
+              <hr style="border:none;border-top:1px solid rgba(255,255,255,.14);margin:6px 0 10px;" />
+
+              <div class="row">
+                <label for="file-format">Save as</label>
+                <select id="file-format" class="select">
+                  <option value="wav">WAV</option>
+                  <option value="mp3">MP3</option>
+                </select>
+              </div>
+
+              <div class="download">
+                <div class="muted" id="status-text" aria-live="polite"></div>
+                <button id="save-as-btn" class="btn" type="button" disabled>Save WAV</button>
+              </div>
+              <div id="progress-container" class="progress-container">
+                <div id="progress-bar" class="progress-bar"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.0/lame.min.js"></script>
+  <script>
+    // ===== State =====
+    let mediaRecorder, recordedChunks = [], baseBlob, audioContext;
+    let baseVol = 1.0, rafId = null, lastObjectUrl = null;
+    let recTimer = null, recSec = 0;
+    let waveEtaTimer = null;
+
+    // ===== Nodes =====
+    const startBtn = document.getElementById('start-record-btn');
+    const stopBtn  = document.getElementById('stop-record-btn');
+    const uploadEl = document.getElementById('upload-audio');
+    const resetBtn = document.getElementById('reset-btn');
+    const saveBtn  = document.getElementById('save-as-btn');
+    const loopDuration = document.getElementById('loop-duration');
+    const fileFormat   = document.getElementById('file-format');
+    const statusText   = document.getElementById('status-text');
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar  = document.getElementById('progress-bar');
+    const audioPreview = document.getElementById('audio-preview');
+    const recPill = document.getElementById('rec-pill');
+    const recIndicator = document.getElementById('rec-indicator');
+
+    const volumeControl = document.getElementById('volume-control');
+    const volumeValue   = document.getElementById('volume-value');
+    const fadeInChk = document.getElementById('fade-in-checkbox');
+    const fadeOutChk = document.getElementById('fade-out-checkbox');
+    const fadeInRange = document.getElementById('fade-in');
+    const fadeOutRange = document.getElementById('fade-out');
+    const fadeInValue = document.getElementById('fade-in-value');
+    const fadeOutValue = document.getElementById('fade-out-value');
+
+    function ensureCtx(){ if (!audioContext) audioContext = new (window.AudioContext||window.webkitAudioContext)(); if (audioContext.state==='suspended') audioContext.resume(); }
+
+    // ===== Bindings =====
+    startBtn.addEventListener('click', startRecording);
+    stopBtn.addEventListener('click', stopRecording);
+    uploadEl.addEventListener('change', onUpload);
+    resetBtn.addEventListener('click', resetAll);
+    saveBtn.addEventListener('click', saveAs);
+
+    fileFormat.addEventListener('change', ()=>{ updateSaveLabel(); estimateSize(); });
+    loopDuration.addEventListener('change', ()=>{ estimateSize(); buildLivePreview(); });
+
+    volumeControl.addEventListener('input', ()=>{ baseVol=parseFloat(volumeControl.value); volumeValue.textContent=`${Math.round(baseVol*100)}%`; buildLivePreviewDebounced(); });
+
+    fadeInChk.addEventListener('change', ()=>{ fadeInRange.disabled=!fadeInChk.checked; fadeInValue.textContent=`${fadeInRange.value}s`; buildLivePreviewDebounced(); });
+    fadeOutChk.addEventListener('change', ()=>{ fadeOutRange.disabled=!fadeOutChk.checked; fadeOutValue.textContent=`${fadeOutRange.value}s`; buildLivePreviewDebounced(); });
+    fadeInRange.addEventListener('input', ()=>{ fadeInValue.textContent=`${fadeInRange.value}s`; buildLivePreviewDebounced(); });
+    fadeOutRange.addEventListener('input', ()=>{ fadeOutValue.textContent=`${fadeOutRange.value}s`; buildLivePreviewDebounced(); });
+
+    audioPreview.addEventListener('play', startPreviewAutomation);
+    audioPreview.addEventListener('pause', ()=>{ if (rafId) cancelAnimationFrame(rafId); rafId=null; });
+
+    function updateSaveLabel(){ saveBtn.textContent = `Save ${fileFormat.value.toUpperCase()}`; }
+
+    // ===== Recording =====
+    async function startRecording(){
+      ensureCtx();
+      try{
+        const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => { if (e.data.size) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = async () => {
+          // ✅ Do NOT force a type — let the browser pick its native container (fixes decode on Safari/Chrome variations)
+          baseBlob = new Blob(recordedChunks);
+          await buildLivePreview();
+          saveBtn.disabled = false;
+          recPill.textContent = 'Ready';
+          stopRecClock();
+        };
+        mediaRecorder.start();
+        startBtn.disabled = true; stopBtn.disabled = false;
+        recPill.innerHTML = '<span class="rec"><span class="dot"></span> Recording</span>';
+        startRecClock();
+      }catch(err){ recPill.textContent = 'Mic permission denied'; console.error(err); }
+    }
+    function stopRecording(){
+      if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+      mediaRecorder.stop();
+      try{ mediaRecorder.stream.getTracks().forEach(t=>t.stop()); }catch(_){}
+      startBtn.disabled = false; stopBtn.disabled = true;
+    }
+    function startRecClock(){
+      recSec = 0; recIndicator.textContent = '00:00';
+      if (recTimer) clearInterval(recTimer);
+      recTimer = setInterval(()=>{ recSec++; const m=String(Math.floor(recSec/60)).padStart(2,'0'); const s=String(recSec%60).padStart(2,'0'); recIndicator.textContent=`${m}:${s}`; },1000);
+    }
+    function stopRecClock(){ if (recTimer){ clearInterval(recTimer); recTimer=null; } }
+
+    async function onUpload(e){
+      const f = e.target.files?.[0]; if (!f) return;
+      ensureCtx();
+      baseBlob = f;
+      await buildLivePreview();
+      saveBtn.disabled = false;
+      recPill.textContent = 'Ready';
+      estimateSize();
+    }
+
+    // ===== Live loop preview =====
+    let previewDebounce;
+    function buildLivePreviewDebounced(){ if (previewDebounce) clearTimeout(previewDebounce); previewDebounce = setTimeout(buildLivePreview, 180); }
+
+    async function decodeBlobToBuffer(blob){
+      const arr = await blob.arrayBuffer();
+      try { return await (audioContext||new AudioContext()).decodeAudioData(arr); }
+      catch(err){ console.error('decodeAudioData failed for blob type:', blob.type, err); throw err; }
+    }
+
+    async function buildLivePreview(){
+      if (!baseBlob) { audioPreview.removeAttribute('src'); audioPreview.load(); return; }
+      ensureCtx();
+      try{
+        const base = await decodeBlobToBuffer(baseBlob);
+        const duration = parseInt(loopDuration.value,10);
+        const volume = parseFloat(volumeControl.value);
+        const fi = fadeInChk.checked ? parseInt(fadeInRange.value,10) : 0;
+        const fo = fadeOutChk.checked ? parseInt(fadeOutRange.value,10) : 0;
+
+        const looped = createLoopedBuffer(base, duration, volume, fi, fo);
+        const wavBlob = await encodeBufferToWav(looped);
+        setPreviewBlob(wavBlob);
+      }catch(err){
+        console.error('Preview build failed:', err);
+        // Fallback: at least show the raw audio so the app doesn’t feel broken
+        setPreviewBlob(baseBlob);
+      }
+    }
+
+    function createLoopedBuffer(audioBuffer, duration, volume, fadeIn, fadeOut){
+      const ch = audioBuffer.numberOfChannels;
+      const rate = audioBuffer.sampleRate;
+      const total = duration * rate;
+      const out = new AudioBuffer({length: total, numberOfChannels: ch, sampleRate: rate});
+      for (let c=0; c<ch; c++){
+        const input = audioBuffer.getChannelData(c);
+        const output = out.getChannelData(c);
+        const inLen = input.length;
+        for (let i=0;i<total;i++){
+          let sample = input[i % inLen] * volume;
+          const t = i / rate;
+          if (fadeIn>0 && t<fadeIn) sample *= (t/fadeIn);
+          if (fadeOut>0 && t>duration-fadeOut) sample *= Math.max(0,(duration - t)/fadeOut);
+          output[i] = sample;
+        }
+      }
+      return out;
+    }
+
+    async function encodeBufferToWav(buffer){
+      const off = new OfflineAudioContext(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
+      const src = off.createBufferSource(); src.buffer = buffer; src.connect(off.destination); src.start();
+      const rendered = await off.startRendering();
+      const wav = audioBufferToWav(rendered);
+      return new Blob([wav], {type:'audio/wav'});
+    }
+
+    function setPreviewBlob(blob){
+      if (lastObjectUrl){ URL.revokeObjectURL(lastObjectUrl); lastObjectUrl = null; }
+      lastObjectUrl = URL.createObjectURL(blob);
+      audioPreview.src = lastObjectUrl;
+      audioPreview.muted = false;
+      audioPreview.volume = computeVolume(baseVol);
+      audioPreview.load();
+    }
+
+    function computeVolume(v){ return Math.pow(Math.max(0, Math.min(1, v)), 1.6); }
+    function startPreviewAutomation(){
+      if (rafId) cancelAnimationFrame(rafId);
+      const step = ()=>{
+        if (!audioPreview || audioPreview.paused || !audioPreview.duration){ rafId=null; return; }
+        const fi = fadeInChk.checked ? parseInt(fadeInRange.value,10) : 0;
+        const fo = fadeOutChk.checked ? parseInt(fadeOutRange.value,10) : 0;
+        let mult = 1, t = audioPreview.currentTime, d = audioPreview.duration;
+        if (fi>0 && t<fi) mult *= (t/fi);
+        if (fo>0 && t>d-fo) mult *= Math.max(0,(d-t)/Math.max(fo,1e-9));
+        audioPreview.volume = computeVolume(baseVol) * mult;
+        rafId = requestAnimationFrame(step);
+      };
+      rafId = requestAnimationFrame(step);
+    }
+
+    // ===== Progress UI =====
+    function showProgress(show, indeterminate=false){
+      progressContainer.style.display = show ? 'block' : 'none';
+      progressContainer.classList.toggle('indeterminate', !!indeterminate);
+      progressBar.style.width = indeterminate ? '40%' : '0%';
+      if (!show){ statusText.textContent=''; }
+    }
+    function setProgress(p,label){
+      if (!progressContainer.classList.contains('indeterminate')){
+        progressBar.style.width = `${Math.max(0,Math.min(1,p))*100}%`;
+      }
+      if (label) statusText.textContent = label;
+    }
+
+    // ===== Export =====
+    async function saveAs(){
+      if (!baseBlob) return;
+      ensureCtx();
+      updateSaveLabel();
+
+      const base = await decodeBlobToBuffer(baseBlob);
+      const duration = parseInt(loopDuration.value,10);
+      const volume = parseFloat(volumeControl.value);
+      const fi = fadeInChk.checked ? parseInt(fadeInRange.value,10) : 0;
+      const fo = fadeOutChk.checked ? parseInt(fadeOutRange.value,10) : 0;
+
+      if (fileFormat.value === 'wav'){
+        // Indeterminate bar + adaptive ETA (WAV offline render gives no internal progress)
+        showProgress(true, true);
+        const t0 = performance.now();
+        let est = Math.max(3, Math.min(30, duration / 10)); if (duration >= 3600) est = 60;
+        clearInterval(waveEtaTimer);
+        waveEtaTimer = setInterval(()=>{
+          const elapsed = (performance.now() - t0)/1000;
+          if (elapsed > est) est = elapsed + 5;
+          const left = Math.max(0, est - elapsed);
+          const mm = String(Math.floor(left/60)).padStart(2,'0');
+          const ss = String(Math.floor(left%60)).padStart(2,'0');
+          setProgress(null, `Encoding WAV — ${mm}:${ss} left`);
+        },250);
+
+        try{
+          const looped = createLoopedBuffer(base, duration, volume, fi, fo);
+          const wavBlob = await encodeBufferToWav(looped);
+          clearInterval(waveEtaTimer);
+          setProgress(1,'Download complete!');
+          forceDownload(wavBlob, 'looped-audio.wav');
+          setTimeout(()=>showProgress(false),700);
+        }catch(err){
+          clearInterval(waveEtaTimer);
+          console.error('WAV export failed:', err);
+          setProgress(null, 'Error: WAV export failed');
+        }
+      } else {
+        // MP3 with real progress
+        showProgress(true, false);
+        const startTs = performance.now();
+        const onProgress = (p, phase)=>{
+          const elapsed = (performance.now() - startTs)/1000;
+          const pct = Math.max(0.0001, p);
+          const estTotal = elapsed / pct;
+          const left = Math.max(0, estTotal - elapsed);
+          const mm = String(Math.floor(left/60)).padStart(2,'0');
+          const ss = String(Math.floor(left%60)).padStart(2,'0');
+          setProgress(p, `${phase} — ${mm}:${ss} left`);
+        };
+        try{
+          const mono = toMono(base);
+          onProgress(0.02,'Building loop');
+          const looped = createLoopedBuffer(mono, duration, volume, fi, fo);
+          const mp3 = await encodeMp3(looped, (p)=>onProgress(0.25 + p*0.75,'Encoding MP3'));
+          setProgress(1,'Download complete!');
+          forceDownload(mp3, 'looped-audio.mp3');
+          setTimeout(()=>showProgress(false),700);
+        }catch(err){
+          console.error('MP3 export failed:', err);
+          setProgress(null, 'Error: MP3 export failed');
+        }
+      }
+    }
+
+    function forceDownload(blob, name){ const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=name; a.style.display='none'; document.body.appendChild(a); a.click(); a.remove(); }
+
+    function toMono(buf){ if (buf.numberOfChannels===1) return buf; const L=buf.getChannelData(0), R=buf.getChannelData(1); const out=(audioContext||new AudioContext()).createBuffer(1, buf.length, buf.sampleRate); const m=out.getChannelData(0); for (let i=0;i<m.length;i++) m[i]=(L[i]+R[i])*0.5; return out; }
+
+    async function encodeMp3(buffer, onProgress){
+      const wav = audioBufferToWav(buffer);
+      const samples = new Int16Array(wav, 44);
+      const enc = new lamejs.Mp3Encoder(1, buffer.sampleRate || 44100, 128);
+      const max = 1152; const parts = [];
+      for (let i=0;i<samples.length;i+=max){
+        const chunk = samples.subarray(i, i+max);
+        const out = enc.encodeBuffer(chunk);
+        if (out.length) parts.push(new Int8Array(out));
+        if (onProgress && (i % (max*80)===0)) onProgress(i/samples.length);
+        if ((i % (max*160))===0) await new Promise(r=>requestAnimationFrame(r));
+      }
+      const end = enc.flush(); if (end.length) parts.push(new Int8Array(end));
+      if (onProgress) onProgress(1);
+      return new Blob(parts, {type:'audio/mp3'});
+    }
+
+    // Your original WAV writer
+    function audioBufferToWav(buffer){
+      const num = buffer.numberOfChannels, len = buffer.length * num * 2 + 44;
+      const ab = new ArrayBuffer(len); const view = new DataView(ab);
+      const chans = []; let sample, offset = 0, pos = 0;
+      const u16 = d => { view.setUint16(pos, d, true); pos += 2; };
+      const u32 = d => { view.setUint32(pos, d, true); pos += 4; };
+      u32(0x46464952); u32(len - 8); u32(0x45564157);
+      u32(0x20746d66); u32(16); u16(1); u16(num);
+      u32(buffer.sampleRate); u32(buffer.sampleRate * 2 * num);
+      u16(num * 2); u16(16); u32(0x61746164); u32(len - pos - 4);
+      for (let i=0; i<num; i++) chans.push(buffer.getChannelData(i));
+      while (pos < len){
+        for (let i=0; i<num; i++){
+          sample = Math.max(-1, Math.min(1, chans[i][offset]));
+          sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+          view.setInt16(pos, sample, true); pos += 2;
+        }
+        offset++;
+      }
+      return ab;
+    }
+
+    function estimateSize(){
+      const dur = parseInt(loopDuration.value,10);
+      const fmt = fileFormat.value;
+      if (fmt==='wav') statusText.textContent = `~${(dur*44100*2*2/1024/1024).toFixed(1)} MB (WAV)`;
+      else statusText.textContent = `~${(dur*128000/8/1024/1024).toFixed(1)} MB (@128 kbps mono)`;
+    }
+
+    function resetAll(){
+      try{
+        if (mediaRecorder){
+          if (mediaRecorder.state==='recording') mediaRecorder.stop();
+          if (mediaRecorder.stream) mediaRecorder.stream.getTracks().forEach(t=>t.stop());
+        }
+      }catch(_){}
+      stopBtn.disabled = true; startBtn.disabled = false;
+
+      if (audioPreview){ audioPreview.pause(); audioPreview.removeAttribute('src'); audioPreview.load(); }
+      if (lastObjectUrl){ URL.revokeObjectURL(lastObjectUrl); lastObjectUrl = null; }
+      if (uploadEl) uploadEl.value = '';
+      baseBlob = null;
+
+      volumeControl.value='1'; volumeValue.textContent='100%';
+      fadeInChk.checked=false; fadeOutChk.checked=false;
+      fadeInRange.disabled=true; fadeOutRange.disabled=true;
+      fadeInRange.value='0'; fadeOutRange.value='0';
+      fadeInValue.textContent='0s'; fadeOutValue.textContent='0s';
+      loopDuration.value='60';
+      recPill.textContent='Ready'; recIndicator.textContent='';
+      saveBtn.disabled = true; updateSaveLabel();
+      showProgress(false); if (waveEtaTimer) { clearInterval(waveEtaTimer); waveEtaTimer=null; }
+      estimateSize();
+    }
+
+    // init
+    resetAll();
+  </script>
+</body>
+</html>
