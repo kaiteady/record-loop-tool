@@ -19,10 +19,41 @@ body{
 }
 
 
-.wrapper{display:grid;place-items:center;padding:16px 0}
+/* Give the section a top feather without touching your Webflow bg */
+.wrapper{
+  display:grid;
+  place-items:center;
+  padding:16px 0;
+  position:relative;   /* so the ::before can sit on top */
+  z-index:0;
+}
 
-    .card{width:min(960px,100%);background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.06));backdrop-filter:blur(10px) saturate(120%);border:1px solid rgba(255,255,255,.15);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);overflow:hidden}
-   
+/* Top white fade, same vibe as the bottom */
+.wrapper::before{
+  content:"";
+  position:absolute;
+  left:0; right:0; top:0;
+  height:120px;                     /* feather depth (try 100–160px) */
+  background:linear-gradient(to bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* Keep your card exactly as-is, plus a tiny top offset so the fade has room */
+.card{
+  width:min(960px,100%);
+  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.06));
+  backdrop-filter:blur(10px) saturate(120%);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:var(--radius-xl);
+  box-shadow:var(--shadow-lg);
+  overflow:hidden;
+
+  position:relative;  /* ensure it sits above the fade overlay */
+  z-index:1;
+  margin-top:20px;    /* tiny white space so the top shadow can feather */
+}
+
     .card__header{padding:20px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:linear-gradient(135deg, rgba(102,126,234,.20), rgba(118,75,162,.20));border-bottom:1px solid rgba(255,255,255,.12)}
     h1{font-size:clamp(20px,2.2vw,26px);margin:0;letter-spacing:.2px}
     .pill{font-size:12px;letter-spacing:.5px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:var(--muted)}
