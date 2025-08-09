@@ -23,9 +23,9 @@ body{
 .wrapper {
   display: grid;
   place-items: center;
-  padding: 40px 0; /* reduced from 96px for tighter top/bottom space */
+  padding: 24px 0; /* even less vertical space */
   position: relative;
-  background: white; /* keeps page edges white */
+  background: white; /* ensures all edges stay white */
 }
 
 .wrapper::before {
@@ -33,27 +33,31 @@ body{
   position: absolute;
   inset: 0;
   margin: auto;
-  width: min(1200px, calc(100% - 56px)); /* keeps width balanced */
-  height: 480px; /* reduced glow height */
+  width: min(1100px, calc(100% - 80px)); /* closer to card width */
+  height: 420px; /* smaller height so glow doesn't reach top/bottom edges */
   background: radial-gradient(circle at center, rgba(65, 30, 105, 0.85), rgba(65, 30, 105, 0) 70%);
-  filter: blur(20px);
-  -webkit-mask-image: radial-gradient(105% 85% at 50% 50%, #000 46%, transparent 66%);
-          mask-image: radial-gradient(105% 85% at 50% 50%, #000 46%, transparent 66%);
+  filter: blur(18px);
+  -webkit-mask-image: radial-gradient(100% 80% at 50% 50%, #000 42%, transparent 64%);
+          mask-image: radial-gradient(100% 80% at 50% 50%, #000 42%, transparent 64%);
   pointer-events: none;
   z-index: 0;
 }
 
 
+
 /* make sure the card sits above the glow */
-.card{ position: relative; z-index: 1; }
+.card {
+  position: relative;
+  z-index: 1;
   width: min(960px, 100%);
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+  background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06));
   backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
+
 
 
     .card__header{padding:20px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:linear-gradient(135deg, rgba(102,126,234,.20), rgba(118,75,162,.20));border-bottom:1px solid rgba(255,255,255,.12)}
