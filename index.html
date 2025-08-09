@@ -19,40 +19,42 @@ body{
 }
 
 
-/* The section that holds the tool */
+/* Fade-to-white hero glow that stays behind the card only */
 .wrapper{
   position: relative;
   display: grid;
   place-items: center;
-  padding: 120px 0;          /* space above/below the card */
-  background: #fff;          /* forces white edges */
-  overflow: hidden;          /* clips the glow so it never spills outside */
+  padding: 96px 0;                 /* white space above/below the glow */
+  background: #fff;                /* page edges stay white */
+  overflow: hidden;                /* hide any bleed */
 }
 
-/* The glow that sits BEHIND the card and fades to white */
 .wrapper::before{
-  content: "";
-  position: absolute;
-  inset: 0;                  /* fill the wrapper only */
-  pointer-events: none;
-  z-index: 0;
+  content:"";
+  position:absolute;
+  width: min(1320px, calc(100% - 48px));   /* max width of colored area */
+  height: 620px;                            /* height of colored area */
+  left:50%; top:50%;
+  transform: translate(-50%, -50%);         /* centers behind the card */
+  border-radius: 48px;
 
-  /* dark center under the card, soft fade to white on all sides */
+  /* Your purple look */
   background:
-    radial-gradient(900px 520px at 50% 220px,
-      rgba(41,25,85,.92) 0%,
-      rgba(41,25,85,.58) 52%,
-      rgba(41,25,85,.26) 74%,
-      rgba(41,25,85,0) 92%),
-    radial-gradient(760px 420px at 50% calc(100% - 180px),
-      rgba(41,25,85,.46) 0%,
-      rgba(41,25,85,.18) 64%,
-      rgba(41,25,85,0) 90%);
+    radial-gradient(900px 520px at 12% -10%, rgba(35,18,68,.95) 0%, rgba(35,18,68,0) 60%),
+    radial-gradient(900px 520px at 108% 8%, rgba(26,22,74,.95) 0%, rgba(26,22,74,0) 60%),
+    linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  /* Feather to white on all sides (reveals .wrapper's white bg) */
+  -webkit-mask-image: radial-gradient(120% 120% at 50% 50%, #000 55%, transparent 100%);
+          mask-image: radial-gradient(120% 120% at 50% 50%, #000 55%, transparent 100%);
+
+  filter: blur(4px);                         /* soft edge */
+  z-index: 0;
+  pointer-events: none;
 }
 
-.card{
-  position: relative;        /* keep: sits above the glow */
-  z-index: 1;                /* keep */
+/* make sure the card sits above the glow */
+.card{ position: relative; z-index: 1; }
   width: min(960px, 100%);
   background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
   backdrop-filter: blur(10px) saturate(120%);
