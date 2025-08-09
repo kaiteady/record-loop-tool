@@ -19,29 +19,40 @@ body{
 }
 
 
-.wrapper {
+/* The section that holds the tool */
+.wrapper{
+  position: relative;
   display: grid;
   place-items: center;
-  padding: 96px 0;
-  position: relative;
-  background: white; /* ensures edges are always white */
+  padding: 120px 0;          /* space above/below the card */
+  background: #fff;          /* forces white edges */
+  overflow: hidden;          /* clips the glow so it never spills outside */
 }
 
-.wrapper::before {
+/* The glow that sits BEHIND the card and fades to white */
+.wrapper::before{
   content: "";
   position: absolute;
-  inset: -200px 0; /* extend above & below */
+  inset: 0;                  /* fill the wrapper only */
   pointer-events: none;
   z-index: 0;
+
+  /* dark center under the card, soft fade to white on all sides */
   background:
-    radial-gradient(800px 400px at 50% 200px, rgba(65, 30, 105, 0.85) 0%, rgba(65, 30, 105, 0) 70%),
-    radial-gradient(800px 400px at 50% calc(100% - 200px), rgba(65, 30, 105, 0.85) 0%, rgba(65, 30, 105, 0) 70%);
-  filter: blur(2px);
+    radial-gradient(900px 520px at 50% 220px,
+      rgba(41,25,85,.92) 0%,
+      rgba(41,25,85,.58) 52%,
+      rgba(41,25,85,.26) 74%,
+      rgba(41,25,85,0) 92%),
+    radial-gradient(760px 420px at 50% calc(100% - 180px),
+      rgba(41,25,85,.46) 0%,
+      rgba(41,25,85,.18) 64%,
+      rgba(41,25,85,0) 90%);
 }
 
-.card {
-  position: relative;
-  z-index: 1;
+.card{
+  position: relative;        /* keep: sits above the glow */
+  z-index: 1;                /* keep */
   width: min(960px, 100%);
   background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
   backdrop-filter: blur(10px) saturate(120%);
