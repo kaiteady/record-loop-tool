@@ -29,15 +29,18 @@ body{
 }
 
 /* Top white fade, same vibe as the bottom */
-.wrapper::before{
-  content:"";
-  position:absolute;
-  left:0; right:0; top:0;
-  height:120px;                     /* feather depth (try 100–160px) */
-  background:linear-gradient(to bottom, #fff 0%, rgba(255,255,255,0) 100%);
-  pointer-events:none;
-  z-index:0;
+.wrapper::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+  z-index: 0;
 }
+
 
 /* Keep your card exactly as-is, plus a tiny top offset so the fade has room */
 .card{
