@@ -20,38 +20,29 @@ body{
 
 
 /* Fade-to-white hero glow that stays behind the card only */
-.wrapper{
-  position: relative;
+.wrapper {
   display: grid;
   place-items: center;
-  padding: 96px 0;                 /* white space above/below the glow */
-  background: #fff;                /* page edges stay white */
-  overflow: hidden;                /* hide any bleed */
+  padding: 40px 0; /* reduced from 96px for tighter top/bottom space */
+  position: relative;
+  background: white; /* keeps page edges white */
 }
 
-.wrapper::before{
-  content:"";
-  position:absolute;
-  width: min(1320px, calc(100% - 48px));   /* max width of colored area */
-  height: 620px;                            /* height of colored area */
-  left:50%; top:50%;
-  transform: translate(-50%, -50%);         /* centers behind the card */
-  border-radius: 48px;
-
-  /* Your purple look */
-  background:
-    radial-gradient(900px 520px at 12% -10%, rgba(35,18,68,.95) 0%, rgba(35,18,68,0) 60%),
-    radial-gradient(900px 520px at 108% 8%, rgba(26,22,74,.95) 0%, rgba(26,22,74,0) 60%),
-    linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-
-  /* Feather to white on all sides (reveals .wrapper's white bg) */
-  -webkit-mask-image: radial-gradient(120% 120% at 50% 50%, #000 55%, transparent 100%);
-          mask-image: radial-gradient(120% 120% at 50% 50%, #000 55%, transparent 100%);
-
-  filter: blur(4px);                         /* soft edge */
-  z-index: 0;
+.wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: min(1200px, calc(100% - 56px)); /* keeps width balanced */
+  height: 480px; /* reduced glow height */
+  background: radial-gradient(circle at center, rgba(65, 30, 105, 0.85), rgba(65, 30, 105, 0) 70%);
+  filter: blur(20px);
+  -webkit-mask-image: radial-gradient(105% 85% at 50% 50%, #000 46%, transparent 66%);
+          mask-image: radial-gradient(105% 85% at 50% 50%, #000 46%, transparent 66%);
   pointer-events: none;
+  z-index: 0;
 }
+
 
 /* make sure the card sits above the glow */
 .card{ position: relative; z-index: 1; }
