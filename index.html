@@ -202,6 +202,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.0/lame.min.js"></script>
   <script>
     // ===== State =====
+    window.dataLayer = window.dataLayer || [];
     let mediaRecorder, recordedChunks = [], baseBlob, audioContext;
     let baseVol = 1.0, rafId = null, lastObjectUrl = null;
     let recTimer = null, recSec = 0;
@@ -241,8 +242,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     saveBtn.addEventListener('click', saveAs);
 
     fileFormat.addEventListener('change', ()=>{ updateSaveLabel(); estimateSize(); });
-    loopDuration.addEventListener('change', ()=>{ estimateSize(); buildLivePreview(); });
+loopDuration.addEventListener('change', ()=>{
+  estimateSize();
+  buildLivePreview();
 
+  const secs = parseInt(loopDuration.value, 10);
+  const label = loopDuration.options[loopDuration.selectedIndex]?.text || '';
+  dataLayer.push({
+    event: 'loop_duration_change',
+    loop_duration_seconds: secs,
+    loop_duration_label: label
+  });
+});
     volumeControl.addEventListener('input', ()=>{ baseVol=parseFloat(volumeControl.value); volumeValue.textContent=`${Math.round(baseVol*100)}%`; buildLivePreviewDebounced(); });
 
     fadeInChk.addEventListener('change', ()=>{ fadeInRange.disabled=!fadeInChk.checked; fadeInValue.textContent=`${fadeInRange.value}s`; buildLivePreviewDebounced(); });
@@ -292,6 +303,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     async function onUpload(e){
       const f = e.target.files?.[0]; if (!f) return;
+      
+ dataLayer.push({                  
+    event: 'upload_audio_select',
+    file_name: f.name,
+    file_size: f.size
+  });
+      
       ensureCtx();
       baseBlob = f;
       await buildLivePreview();
